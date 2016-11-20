@@ -293,7 +293,7 @@ if __name__ == '__main__':
     logging.getLogger("requests").setLevel(logging.WARNING) # On desactive les logs pour la librairie requests
     logging.info("Starting from %s" % str(os.getcwd()))
 
-    ops = Ops4app.get_instance(appli_name="immoweb", config_default_file_path='./immtrk.config.defaults.toml')
+    ops = Ops4app.get_instance(appli_name="immweb", config_default_file_path='./immtrk.config.defaults.toml')
     if not ops :
         logging.critical('Problem with connexion to DB, exiting...')
     else :

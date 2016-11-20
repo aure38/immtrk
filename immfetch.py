@@ -1044,7 +1044,7 @@ if __name__ == '__main__':
     logging.getLogger("schedule").setLevel(logging.WARNING) # On desactive les logs pour la librairie schedule
     logging.info("Starting from %s" % str(os.getcwd()))
 
-    ops = Ops4app.get_instance(appli_name="immofetch", config_default_file_path='../immotrack.config.defaults.toml')
+    ops = Ops4app.get_instance(appli_name="immfetch", config_default_file_path='../immtrk.config.defaults.toml')
     nblaunch = 0
     daily_hour = ops.cfg.get('fetcher').get('daily_hour') or ""  # Format hh:mm
     if ops :
