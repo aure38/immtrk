@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!-- http://getbootstrap.com/2.3.2/index.html     http://getbootstrap.com/css/#grid        -->
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>ImmoTrack</title>
+        <link rel="icon" type="image/gif" href="/images/favicon.gif" />
+        <!-- JQUERY & JQUERY UI -->
+        <script type="text/javascript" src="/jslib/jquery-3.1.0.min.js"></script>
+        <script type="text/javascript" src="/jslib/jquery-ui/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="/jslib/jquery-ui/jquery-ui.min.css">
+        <!-- DataTable & selectize -->
+        <script type="text/javascript" src="/jslib/jquery.dataTables.min.js"></script>
+        <link rel="stylesheet" href="/css/jquery.dataTables.min.css">
+        <script type="text/javascript" src="/jslib/selectize.min.js"></script>
+        <link rel="stylesheet" href="/css/selectize.legacy.css">
+        <!-- Bootstrap -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="/jslib/bootstrap-3.3.7/js/bootstrap.js"></script>
+        <link href="/jslib/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet" media="screen">
+
+        <script type="text/javascript" src="/jslib/underscore-min.js"></script>
+        <script type="text/javascript" src="./listei.js"></script>
+    </head>
+    <body style="background-color: #000000;">
+        <div class="well well-sm row" style="color:#000000; background-color: #d7d6e4; display:flex; justify-content: left; padding:4px; max-width:100%; margin-bottom: 2px; margin-top: 1px;margin-right: 3px;margin-left: 3px;">
+            <button class="btn btn-primary btn-xs" type="button">User&nbsp;&nbsp;<span id="fd_user" class="badge">---</span></button>
+            &nbsp;&nbsp;
+            <button class="btn btn-primary btn-xs" type="button">Date Min&nbsp;&nbsp;<span id="fd_datemin" class="badge">YY-MM-DD HH:MM</span></button>
+            &nbsp;&nbsp;
+            <button class="btn btn-primary btn-xs" type="button">Date Interval&nbsp;&nbsp;<span id="fd_dateinterval" class="badge">YY-MM-DD HH:MM</span></button>
+            &nbsp;&nbsp;
+            <button class="btn btn-primary btn-xs" type="button">Date Max&nbsp;&nbsp;<span id="fd_datemax" class="badge">YY-MM-DD HH:MM</span></button>
+            &nbsp;&nbsp;
+            <button class="btn btn-primary btn-xs" type="button">Count Total&nbsp;&nbsp;<span id="fd_nbtotal" class="badge">0</span></button>
+            &nbsp;&nbsp;
+            <button class="btn btn-primary btn-xs" type="button">Count Selected&nbsp;&nbsp;<span id="fd_nbselect" class="badge">0</span></button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div style="text-align:center; margin-top:0px;">
+            Last&nbsp;<input type="text" style="text-align:center;" id="input_nbdays" size="1" value="7">&nbsp;days
+            </div>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button class="btn btn-success btn-xs" type="button" onclick="butt_refresh();">Refresh</button>
+        </div>
+        <div class="well well-sm row" style="color:#000000; background-color: #d7d6e4; padding:4px; max-width:100%; margin-bottom: 2px; margin-top: 1px;margin-right: 3px;margin-left: 3px;">
+            <div class="row" style="margin-top:5px;margin-bottom:5px;">
+                <div class="col-xs-1" style="text-align:right; margin-top:8px;"><b>Show</b></div>
+                <div class="col-xs-5" style="text-align:left;"><input type="text" id="input_tags_show"></div>
+                <div class="col-xs-1" style="text-align:right; margin-top:8px;"><b>Hide</b></div>
+                <div class="col-xs-5" style="text-align:left;"><input type="text" id="input_tags_hide"></div>
+            </div>
+        </div>
+        <div style="margin-left:3px;margin-right:3px; background-color:#f2f2f2;">
+        <br>
+            <table id="tbl_liste" class="display" style="" border="0px" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th width="6%" style="text-align:center; verticalAlign:middle;">Update</th>
+                        <th width="8%" style="text-align:center; verticalAlign:middle;">Localite</th>
+                        <th width="4%" style="text-align:center; verticalAlign:middle;">Prix</th>
+                        <th width="4%" style="text-align:center; verticalAlign:middle;">Surf</th>
+                        <th width="33%" style="text-align:center; verticalAlign:middle;">Titre</th>
+                        <th width="5%" style="text-align:center; verticalAlign:middle;">Actions</th>
+                        <th width="40%" style="text-align:center; verticalAlign:middle;">Description</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </body>
+</html>
