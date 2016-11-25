@@ -323,13 +323,13 @@ if __name__ == '__main__':
         server_config={
             'server.socket_host'            : '0.0.0.0',
             'server.socket_port'            : int(ops.cfg.get('websrv').get('network.port')),
-            'server.socket_queue_size'      : 5,  # The ‘backlog’ argument to socket.listen(); specifies the maximum number of queued connections (default 5).
+            'server.socket_queue_size'      : 5,  # The "backlog" argument to socket.listen(); specifies the maximum number of queued connections (default 5).
             'server.socket_timeout'         : 10, # The timeout in seconds for accepted connections (default 10).
             'server.accepted_queue_size'    : 50, # The maximum number of requests which will be queued up before the server refuses to accept it (default -1, meaning no limit).
             'server.thread_pool'            : 10, # The number of worker threads to start up in the pool.
             'server.thread_pool_max'        : 40, # he maximum size of the worker-thread pool. Use -1 to indicate no limit.
 
-            'server.ssl_module'             : 'builtin',                         # ''pyopenssl' PAS COMPATIBLE PYHON 3 nov-2016, #'builtin', # The name of a registered SSL adaptation module to use with the builtin WSGI server. Builtin options are ‘builtin’ (to use the SSL library built into recent versions of Python) and ‘pyopenssl’ (to use the PyOpenSSL project, which you must install separately). You may also register your own classes in the wsgiserver.ssl_adapters dict.
+            'server.ssl_module'             : 'builtin',    # ''pyopenssl' PAS COMPATIBLE PYHON 3 nov-2016
             'server.ssl_private_key'        : Path(ops.getLocalPath() / Path('immtrk2_cp.pem')).as_posix() ,   # The filename of the private key to use with SSL.
             'server.ssl_certificate'        : Path(ops.getLocalPath() / Path('immtrk2_cert.pem')).as_posix(), # The filename of the SSL certificate to use.
             'server.ssl_certificate_chain'  : None, # When using PyOpenSSL, the certificate chain to pass to Context.load_verify_locations.
@@ -348,7 +348,9 @@ if __name__ == '__main__':
 
         app_conf = { '/': { 'tools.staticdir.on'  : True, 'tools.staticdir.index'  : "index.html", 'tools.staticdir.dir'            : Path().cwd().joinpath("websrv").as_posix(),
                             'tools.auth_basic.on' : True, 'tools.auth_basic.realm' : 'localhost',  'tools.auth_basic.checkpassword' : validate_password,
-                            'tools.sessions.on'   : True } }
+                            'tools.sessions.on'   : True },
+                     '/favicon.ico' : { 'tools.staticfile.on': True, 'tools.staticfile.filename': Path().cwd().joinpath("websrv").joinpath("images").joinpath("favicon.gif").as_posix()  }
+                     }
         cherrypy.tree.mount(ServImm(ops), "/", app_conf)
 
         # --- Loglevel pour CherryPy : a faire une fois les serveurs mounted et avant le start
