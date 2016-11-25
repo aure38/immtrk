@@ -1,0 +1,23 @@
+# https://github.com/toml-lang/toml         https://github.com/avakar/pytoml
+#
+# This file contains config by default
+#
+title = "immtrk"
+
+[servers]
+"rdb.ip"      = "127.0.0.1"
+"rdb.port"    = 28015
+"rdb.base"    = "immtrk"
+"idb.ip"     = "127.0.0.1"
+
+"idb.port"   = 8086
+"idb.login"  = "john"
+"idb.pwd"    = "doe"
+"idb.kpi.db" = "test"
+splashserver = "127.0.0.1"
+
+[websrv]
+"network.port"  = 80
+
+[websrv.users]
+"" = ""

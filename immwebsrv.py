@@ -7,6 +7,17 @@ from aclib.func4strings import Func4strings as f4s
 import rethinkdb as r
 import hashlib
 
+class ServBase :
+    @staticmethod
+    def error_page(status, message, traceback, version):
+        logging.warning("HTTP ERR = %s | %s" % (str(status), str(message)))
+        return "<html><body>Error %s</body></html>" % str(status)
+    @staticmethod
+    def handle_error() :
+        logging.warning("HTTP ERR 500")
+        cherrypy.response.status = 500
+        cherrypy.response.body = ["<html><body>Error 500</body></html>"]
+
 class ServImm(object):
     def __init__(self, theops):
         self.myops = theops
@@ -26,17 +37,17 @@ class ServImm(object):
             nb_days2 = 7
         if retourObj['User'] != 'Nobody' :
             if self.myops.rdb_get_lock() is not None :
-                DateMin  = r.table('immoanno')['ts_updated'].min().run(self.myops.rdb)
+                DateMin  = r.table('anno')['ts_updated'].min().run(self.myops.rdb)
                 retourObj['DateMin'] = DateMin.astimezone(tz=timezone('Europe/Paris')).strftime('%y-%m-%d %H:%M')
 
-                DateMax  = r.table('immoanno')['ts_updated'].max().run(self.myops.rdb)
+                DateMax  = r.table('anno')['ts_updated'].max().run(self.myops.rdb)
                 retourObj['DateMax'] = DateMax.astimezone(tz=timezone('Europe/Paris')).strftime('%y-%m-%d %H:%M')
 
-                retourObj['CountTotal'] = int(r.table('immoanno').count().run(self.myops.rdb))
+                retourObj['CountTotal'] = int(r.table('anno').count().run(self.myops.rdb))
                 DateLimite = DateMax - timedelta(days=int(nb_days2))
-                retourObj['CountSelected'] = int(r.table('immoanno').filter(lambda row : row["ts_updated"].ge(DateLimite)).count().run(self.myops.rdb))
+                retourObj['CountSelected'] = int(r.table('anno').filter(lambda row : row["ts_updated"].ge(DateLimite)).count().run(self.myops.rdb))
 
-                DateMinSelect  = r.table('immoanno').filter(lambda row : row["ts_updated"].ge(DateLimite))['ts_updated'].min().run(self.myops.rdb)
+                DateMinSelect  = r.table('anno').filter(lambda row : row["ts_updated"].ge(DateLimite))['ts_updated'].min().run(self.myops.rdb)
                 retourObj['DateInterval'] = DateMinSelect.astimezone(tz=timezone('Europe/Paris')).strftime('%y-%m-%d %H:%M')
 
                 self.myops.rdb_release()
@@ -54,8 +65,8 @@ class ServImm(object):
         theuser = cherrypy.session.get('usrun') or 'Nobody'
         if theuser != 'Nobody' :
             if self.myops.rdb_get_lock() is not None :
-                if r.table('immoanno_users')['tags_usr'][theuser].count().run(self.myops.rdb) > 0 :
-                    retourObj['alltags'] = r.table('immoanno_users')['tags_usr'][theuser].distinct().reduce(lambda left,right : left+right).distinct().run(self.myops.rdb)
+                if r.table('anno_users')['tags_usr'][theuser].count().run(self.myops.rdb) > 0 :
+                    retourObj['alltags'] = r.table('anno_users')['tags_usr'][theuser].distinct().reduce(lambda left,right : left+right).distinct().run(self.myops.rdb)
                 self.myops.rdb_release()
                 if "---" not in retourObj['alltags'] :
                     retourObj['alltags'].append("---")
@@ -83,7 +94,7 @@ class ServImm(object):
                 cherrypy.session['alltags'] = tags_in_session
 
             if self.myops.rdb_get_lock() is not None :
-                curseur = r.table('immoanno_users').insert({"id": object_id, "tags_usr": {theuser: tags_obj2}}, conflict='update').run(self.myops.rdb)
+                curseur = r.table('anno_users').insert({"id": object_id, "tags_usr": {theuser: tags_obj2}}, conflict='update').run(self.myops.rdb)
                 logging.debug('Update tags : %s' % str(curseur))
                 self.myops.rdb_release()
         return { 'answer' : "ok"}
@@ -105,10 +116,10 @@ class ServImm(object):
         if retourObj['User'] != 'Nobody' :
             if self.myops.rdb_get_lock() is not None :
                 # --- Requete avec JOINTURE sur les user tags
-                DateMax  = r.table('immoanno')['ts_updated'].max().run(self.myops.rdb)
+                DateMax  = r.table('anno')['ts_updated'].max().run(self.myops.rdb)
                 DateLimite = DateMax - timedelta(days=int(nb_days2))
-                curseur = r.table('immoanno').filter(lambda row : row["ts_updated"].ge(DateLimite))
-                curseur = curseur.outer_join(r.table('immoanno_users').filter(lambda row : row["tags_usr"].keys().contains(theuser)), lambda rowA,rowB: rowB['id'].eq(rowA['id']).and_(rowB.has_fields('tags_usr'))).zip()
+                curseur = r.table('anno').filter(lambda row : row["ts_updated"].ge(DateLimite))
+                curseur = curseur.outer_join(r.table('anno_users').filter(lambda row : row["tags_usr"].keys().contains(theuser)), lambda rowA,rowB: rowB['id'].eq(rowA['id']).and_(rowB.has_fields('tags_usr'))).zip()
                 # Choix des champs a garder
                 curseur = curseur.order_by(r.desc('ts_updated'), 'codepostal')
                 curseur = curseur.run(self.myops.rdb)
@@ -230,7 +241,7 @@ class ServImm(object):
         if pIDH != '' :
             dbconn = self.myops.rdb_get_lock()
             if dbconn is not None :
-                curseur = r.table('immoanno')  # .max('ts_collected').to_json()
+                curseur = r.table('anno')  # .max('ts_collected').to_json()
                 curseur = curseur.filter(r.row["id_hash"].eq(pIDH))
                 curseur = curseur.run(dbconn)
                 tags0 = curseur.next()
@@ -275,7 +286,7 @@ class ServImm(object):
         if pID != '' :
             dbconn = self.myops.rdb_get_lock()
             if dbconn is not None :
-                curseur = r.table('immoimg')
+                curseur = r.table('img')
                 curseur = curseur.get(pID)
                 curseur = curseur.run(dbconn)
 
@@ -293,35 +304,42 @@ if __name__ == '__main__':
     logging.getLogger("requests").setLevel(logging.WARNING) # On desactive les logs pour la librairie requests
     logging.info("Starting from %s" % str(os.getcwd()))
 
-    ops = Ops4app.get_instance(appli_name="immweb", config_default_file_path='./immtrk.config.defaults.toml')
+    ops = Ops4app.get_instance(appli_name="immweb", cfg_filename='immwebsrv.toml', cfg_local_ext="-local", db_replace_conf_file=True)
     if not ops :
         logging.critical('Problem with connexion to DB, exiting...')
     else :
         theusers = ops.cfg.get('websrv').get('users')
         def validate_password(realm='localhost', username='', password=''):
-            if 1 < len(username) < 20 and 1 < len(password) < 20 :
+            if 2 < len(username) < 20 and 4 < len(password) < 20 :
                 userh = hashlib.sha256(str(username).encode('utf-8')).hexdigest()
                 passh = hashlib.sha256(str(password).encode('utf-8')).hexdigest()
                 if userh in theusers and theusers[userh] == passh:
                     cherrypy.session['usrun'] = username
                     return True
+            logging.warning("LOGIN ERROR WITH %s | %s | %s" % (str(realm), str(username), str(password)))
             return False
 
         # http://docs.cherrypy.org/en/latest/pkg/cherrypy.html?highlight=ssl#cherrypy._cpserver.Server
         server_config={
             'server.socket_host'            : '0.0.0.0',
             'server.socket_port'            : int(ops.cfg.get('websrv').get('network.port')),
-            'server.socket_queue_size'      : 5, # The ‘backlog’ argument to socket.listen(); specifies the maximum number of queued connections (default 5).
+            'server.socket_queue_size'      : 5,  # The ‘backlog’ argument to socket.listen(); specifies the maximum number of queued connections (default 5).
             'server.socket_timeout'         : 10, # The timeout in seconds for accepted connections (default 10).
             'server.accepted_queue_size'    : 50, # The maximum number of requests which will be queued up before the server refuses to accept it (default -1, meaning no limit).
             'server.thread_pool'            : 10, # The number of worker threads to start up in the pool.
             'server.thread_pool_max'        : 40, # he maximum size of the worker-thread pool. Use -1 to indicate no limit.
 
-            'server.ssl_module'             : 'builtin', # ''pyopenssl' PAS COMPATIBLE PYHON 3 nov-2016, #'builtin', # The name of a registered SSL adaptation module to use with the builtin WSGI server. Builtin options are ‘builtin’ (to use the SSL library built into recent versions of Python) and ‘pyopenssl’ (to use the PyOpenSSL project, which you must install separately). You may also register your own classes in the wsgiserver.ssl_adapters dict.
-            'server.ssl_private_key'        : '../immtrk-ress/immtrk2_cp.pem', # The filename of the private key to use with SSL.
-            'server.ssl_certificate'        : '../immtrk-ress/immtrk2_cert.pem', # The filename of the SSL certificate to use.
+            'server.ssl_module'             : 'builtin',                         # ''pyopenssl' PAS COMPATIBLE PYHON 3 nov-2016, #'builtin', # The name of a registered SSL adaptation module to use with the builtin WSGI server. Builtin options are ‘builtin’ (to use the SSL library built into recent versions of Python) and ‘pyopenssl’ (to use the PyOpenSSL project, which you must install separately). You may also register your own classes in the wsgiserver.ssl_adapters dict.
+            'server.ssl_private_key'        : Path(ops.getLocalPath() / Path('immtrk2_cp.pem')).as_posix() ,   # The filename of the private key to use with SSL.
+            'server.ssl_certificate'        : Path(ops.getLocalPath() / Path('immtrk2_cert.pem')).as_posix(), # The filename of the SSL certificate to use.
             'server.ssl_certificate_chain'  : None, # When using PyOpenSSL, the certificate chain to pass to Context.load_verify_locations.
             'server.ssl_context'            : None, # When using PyOpenSSL, an instance of SSL.Context.
+
+            'error_page.401' : ServBase.error_page,
+            'error_page.402' : ServBase.error_page,
+            'error_page.403' : ServBase.error_page,
+            'error_page.404' : ServBase.error_page,
+            'request.error_response': ServBase.handle_error,
 
             'log.screen' : False, 'log.access_file': '' , 'log.error_file': '',
             'engine.autoreload.on' : False,  # Sinon le server se relance des qu'un fichier py est modifie...
